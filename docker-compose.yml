@@ -1,0 +1,13 @@
+services:
+  dolphin-mcp-pilot:
+    build: .
+    container_name: dolphin-mcp-pilot
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      DS_MCP_TRANSPORT: "http"
+      MCP_HOST: "0.0.0.0"
+      MCP_PORT: "8001"

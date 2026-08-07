@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "dolphinscheduler": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--env-file",
+        "/path/to/your/.env",
+        "dolphin-mcp-pilot:latest"
+      ]
+    }
+  }
+}

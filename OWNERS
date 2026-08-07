@@ -1,0 +1,18 @@
+# OWNERS
+
+# dolphin-mcp-pilot 项目权限配置
+# 遵循讯飞开源社区治理规范
+
+# OWNERS
+# approvers: 项目负责人，有合入 PR、发布版本、修改配置的权限
+# reviewers: 代码评审人，PR 合入需至少 1 名 reviewer 通过
+
+approvers:
+  - Hui-of-limin     # 廖珺辉，项目负责人
+
+reviewers:
+  - charleswillicks  # zqwu，代码评审人
+
+# 权限说明
+# - approvers: 拥有合入 PR、发布版本、修改配置的权限，对项目质量负最终责任
+# - reviewers: 负责代码评审、技术把关，PR 合入需至少 1 名 reviewer 通过
