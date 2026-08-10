@@ -32,9 +32,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/dolphin-mcp-pilot"
-Repository = "https://github.com/your-org/dolphin-mcp-pilot"
-Issues = "https://github.com/your-org/dolphin-mcp-pilot/issues"
+Homepage = "https://github.com/iflytek/dolphin-mcp-pilot"
+Repository = "https://github.com/iflytek/dolphin-mcp-pilot"
+Issues = "https://github.com/iflytek/dolphin-mcp-pilot/issues"
 
 [project.scripts]
 dolphin-mcp-pilot = "dolphin_mcp_pilot.__main__:main"
