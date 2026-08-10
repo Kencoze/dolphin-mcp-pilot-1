@@ -220,11 +220,15 @@ Add to your MCP client config:
 
 > ⚠️ The URL must end with `/`. Without the trailing slash, Starlette returns a 307 redirect, which some MCP clients fail to follow.
 
-**More examples** in `examples/` directory:
+**More examples** in the [`examples/`](examples/README.md) directory:
 - `codebuddy-config.json` - CodeBuddy configuration
 - `claude-desktop-config.json` - Claude Desktop stdio mode
 - `http-auth-token.json` - HTTP with token auth
 - `http-auth-password.json` - HTTP with username/password
+
+Want to share a configuration for another MCP client or deployment mode? Copy the
+[`examples/TEMPLATE`](examples/TEMPLATE) and follow the
+[example contribution guide](examples/README.md#how-to-contribute).
 
 ### Multi-tenant per-request auth
 
@@ -345,7 +349,9 @@ dolphin-mcp-pilot
 
 ## 🤝 Contributing
 
-Contributions welcome! Please open an issue or PR.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for project changes, or follow the
+[example contribution guide](examples/README.md#how-to-contribute) to share a tested MCP client
+configuration.
 
 ## 🔍 Verify Deployment
 
