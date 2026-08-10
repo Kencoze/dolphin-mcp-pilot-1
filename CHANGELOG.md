@@ -28,7 +28,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Package metadata**: replaced stale `your-org` placeholder in `pyproject.toml` URLs with `iflytek`
+- **Package metadata**: replaced stale `your-org` placeholder with `iflytek` in `pyproject.toml` and `README*.md` URLs
+- **Setuptools deprecations**: migrated `project.license` from deprecated TOML table `{ text = "Apache-2.0" }` to SPDX string `"Apache-2.0"`; removed `License :: OSI Approved :: Apache Software License` classifier; bumped `setuptools>=68` → `setuptools>=77`
+
+### Docker Compose upgrade (issue #11)
+
+- **`docker-compose.yml`** rewritten as a production-ready reference:
+  - Default `dolphin-mcp-pilot` service pulls from `ghcr.io/iflytek/dolphin-mcp-pilot:${IMAGE_TAG:-latest}`
+  - `dolphin-mcp-pilot-dev` service under `profiles: ["dev"]` builds from local Dockerfile and mounts `./dolphin_mcp_pilot` read-only
+  - Explicit `healthcheck`, `logging` (json-file, `max-size`/`max-file`), and `deploy.resources` (CPU/memory limits + reservations)
+  - Shared config factored via YAML anchors (`x-common`) to keep prod and dev in sync
+  - Container port fixed at 8001 (matches Dockerfile HEALTHCHECK); `MCP_PORT` only controls host-side port mapping
+- **`.env.example`** extended with Compose-tunable variables: `IMAGE_TAG`, `LOG_MAX_SIZE`, `LOG_MAX_FILE`, `CPU_LIMIT`, `MEMORY_LIMIT`, `CPU_RESERVATION`, `MEMORY_RESERVATION`
+- **`README.md` / `README.zh-CN.md`** Option A rewritten as a Docker Compose quickstart (prepare `.env` → `docker compose up` → verify `healthy`); dev mode documented alongside
 
 ---
 
