@@ -10,9 +10,11 @@
 
 </div>
 
-A production-ready MCP server for Apache DolphinScheduler.
+**Let AI agents actually operate your data pipelines — not just read them.**
 
-**dolphin-mcp-pilot** exposes **53+ tools** for projects, workflows, DAG creation, schedules, instances, resources, logs, monitoring and raw API passthrough — designed for AI agents that need to operate DolphinScheduler beyond basic read-only usage.
+**dolphin-mcp-pilot** is a production-ready [MCP](https://modelcontextprotocol.io) server for **Apache DolphinScheduler**. It exposes **53+ tools** so an AI agent can build, schedule, run, monitor and *recover* real workflows end-to-end — DAG/SQL creation, cron schedules, instance lifecycle (pause / resume / rerun / rerun-from-failure), logs, resources, version rollback and raw API passthrough — with multi-tenant per-request auth.
+
+Most public DolphinScheduler MCP servers stop at read / list / start / stop. This one is built for **real operations and unattended recovery** — the part agents actually get stuck on.
 
 ## 🎯 Why this project?
 

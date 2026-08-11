@@ -10,9 +10,11 @@
 
 </div>
 
-Apache DolphinScheduler 的生产级 MCP 服务器。
+**让 AI Agent 真正去操作你的数据管道，而不只是读取它。**
 
-**dolphin-mcp-pilot** 提供 **53+ 工具**，覆盖项目管理、工作流、DAG 创建、调度、实例、资源、日志、监控以及原始 API 透传 —— 专为需要超越只读操作的 AI Agent 设计。
+**dolphin-mcp-pilot** 是 Apache DolphinScheduler 的生产级 [MCP](https://modelcontextprotocol.io) 服务器。它提供 **53+ 工具**，让 AI Agent 端到端地构建、调度、运行、监控并*恢复*真实工作流 —— DAG/SQL 创建、Cron 调度、实例生命周期（暂停 / 恢复 / 重跑 / 从失败处重跑）、日志、资源、版本回滚与原始 API 透传，并支持多租户每请求鉴权。
+
+大多数公开的 DolphinScheduler MCP 服务器止步于读 / 列 / 启 / 停。本项目面向**真实运维与无人值守恢复** —— 也正是 Agent 最容易卡住的地方。
 
 ## 🎯 为什么需要这个项目？
 
