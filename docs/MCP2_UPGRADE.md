@@ -311,6 +311,88 @@ dolphin-mcp-pilot 同时支持 stdio 和 HTTP 传输：
 1. **短期**：可以继续使用旧客户端连接 dolphin-mcp-pilot 1.x 版本
 2. **长期**：建议升级到 MCP 2.0 客户端以使用新特性
 
+## 部署注意事项
+
+### Host 配置（重要！）
+
+MCP 2.0 SDK 的 `streamable_http_app()` 默认启用 **DNS-rebinding 保护**，这是一个安全特性，但会影响部署：
+
+**默认行为：**
+```python
+# 如果不指定 host 参数，默认值为 127.0.0.1
+mcp.streamable_http_app(stateless_http=True)
+# 结果：只接受 Host: localhost 或 Host: 127.0.0.1 的请求
+# 其他域名或 IP 的请求会被拒绝，返回 421 Invalid Host header
+```
+
+**生产部署必须显式配置 host：**
+
+```python
+# Docker/Kubernetes 部署
+mcp.streamable_http_app(
+    stateless_http=True,
+    host="0.0.0.0",  # 允许所有 Host 头
+)
+
+# 或者使用环境变量
+import os
+mcp.streamable_http_app(
+    stateless_http=True,
+    host=os.getenv("MCP_HOST", "0.0.0.0"),
+)
+```
+
+**dolphin-mcp-pilot 的配置：**
+
+dolphin-mcp-pilot 已经正确处理了这个配置：
+
+```python
+# dolphin_mcp_pilot/__main__.py
+mcp_app = mcp.streamable_http_app(
+    stateless_http=True,
+    streamable_http_path="/mcp/",
+    host=MCP_HOST,  # 从环境变量读取，默认 0.0.0.0
+)
+```
+
+**验证部署：**
+
+如果你在 Docker 或负载均衡器后面部署，可以通过以下方式验证：
+
+```bash
+# 使用域名访问（应该返回 200）
+curl -H "Host: pilot.example.com" http://your-server:8001/mcp/
+
+# 如果使用 localhost 访问（应该返回 200）
+curl -H "Host: localhost:8001" http://localhost:8001/mcp/
+```
+
+如果返回 `421 Invalid Host header`，说明 Host 配置有问题。
+
+### 负载均衡器配置
+
+由于 MCP 2.0 是无状态协议，可以使用标准的负载均衡器（无需会话亲和性）：
+
+**推荐配置：**
+- ✅ 轮询（Round Robin）
+- ✅ 最少连接（Least Connections）
+- ✅ 基于 IP 哈希（如果有会话需求，但 MCP 2.0 不需要）
+
+**不需要的配置：**
+- ❌ 会话亲和性（Sticky Sessions）- MCP 2.0 无状态，不需要
+- ❌ 特殊的路由规则 - 任何请求可以路由到任何实例
+
+### 健康检查
+
+Docker 镜像内置了健康检查（每 30 秒）：
+
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD nc -z 127.0.0.1 8001 || exit 1
+```
+
+这个健康检查在容器内部运行，使用 localhost，所以不受 Host 配置影响。
+
 ## 常见问题
 
 ### Q: 我需要修改现有代码吗？
@@ -331,6 +413,29 @@ dolphin-mcp-pilot 同时支持 stdio 和 HTTP 传输：
 - 可以使用标准负载均衡器
 - 更好的水平扩展能力
 - 更简单的故障恢复
+
+### Q: 部署后返回 421 Invalid Host header 怎么办？
+
+**A:** 这是因为 MCP 2.0 SDK 默认启用了 DNS-rebinding 保护。确保：
+
+1. **检查 MCP_HOST 环境变量**：Docker 部署时应设置为 `0.0.0.0`
+   ```bash
+   # .env 文件
+   MCP_HOST=0.0.0.0
+   ```
+
+2. **验证配置**：查看容器日志，应该看到：
+   ```
+   dolphin-mcp-pilot listening on http://0.0.0.0:8001/mcp/
+   ```
+
+3. **测试访问**：
+   ```bash
+   # 使用实际域名测试
+   curl -H "Host: your-domain.com" http://your-server:8001/mcp/
+   ```
+
+如果问题仍然存在，检查是否修改了代码中的 host 配置。dolphin-mcp-pilot 已经正确处理了这个配置，正常情况下不会出现此问题。
 
 ### Q: 如何验证迁移成功？
 

@@ -58,10 +58,13 @@ async def lifespan(app: Starlette):
 def main() -> None:
     if DS_MCP_TRANSPORT == "http":
         # Use stateless HTTP transport (MCP 2.0)
-        # Create streamable HTTP app with explicit path configuration
+        # Create streamable HTTP app with explicit host configuration
+        # MCP_HOST defaults to 0.0.0.0 in Docker, but streamable_http_app() defaults to 127.0.0.1
+        # We must pass the host parameter to avoid DNS-rebinding protection blocking non-localhost requests
         mcp_app = mcp.streamable_http_app(
             stateless_http=True,
             streamable_http_path="/mcp/",
+            host=MCP_HOST,  # Use the configured host (0.0.0.0 for Docker, or specific host)
         )
 
         # Mount the MCP app at root, it will handle /mcp/ internally
