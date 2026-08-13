@@ -31,33 +31,28 @@ __version__ = "0.3.0"
 __author__ = "dolphin-mcp-pilot contributors"
 __license__ = "Apache-2.0"
 
-from .config import get_ds_url, get_ds_credentials, get_tenant_code
-from .auth import set_current_credentials, get_credentials, login, clear_cache
-from .client import ds_get, ds_post, ds_put, ds_delete
-from .utils import require_ok, resolve_project_code
+from .auth import clear_cache, get_credentials, login, set_current_credentials
+from .client import ds_delete, ds_get, ds_post, ds_put
+from .config import get_ds_credentials, get_ds_url, get_tenant_code
 from .server import mcp
+from .utils import require_ok, resolve_project_code
 
 __all__ = [
-    "__version__",
     "__author__",
     "__license__",
-    # config
-    "get_ds_url",
-    "get_ds_credentials",
-    "get_tenant_code",
-    # auth
-    "set_current_credentials",
-    "get_credentials",
-    "login",
+    "__version__",
     "clear_cache",
-    # client
+    "ds_delete",
     "ds_get",
     "ds_post",
     "ds_put",
-    "ds_delete",
-    # utils
+    "get_credentials",
+    "get_ds_credentials",
+    "get_ds_url",
+    "get_tenant_code",
+    "login",
+    "mcp",
     "require_ok",
     "resolve_project_code",
-    # MCP app
-    "mcp",
+    "set_current_credentials",
 ]

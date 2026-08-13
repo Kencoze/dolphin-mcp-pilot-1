@@ -37,14 +37,16 @@ class TestConfig(unittest.TestCase):
             self.assertIn("DS_URL", str(ctx.exception))
 
     def test_get_ds_credentials(self):
-        with patch.object(config, "DS_USER", "admin"), patch.object(
-            config, "DS_PASSWORD", "secret"
+        with (
+            patch.object(config, "DS_USER", "admin"),
+            patch.object(config, "DS_PASSWORD", "secret"),
         ):
             self.assertEqual(config.get_ds_credentials(), ("admin", "secret"))
 
     def test_get_ds_credentials_raises_when_incomplete(self):
-        with patch.object(config, "DS_USER", "admin"), patch.object(
-            config, "DS_PASSWORD", ""
+        with (
+            patch.object(config, "DS_USER", "admin"),
+            patch.object(config, "DS_PASSWORD", ""),
         ):
             with self.assertRaises(ValueError):
                 config.get_ds_credentials()
@@ -101,8 +103,9 @@ class TestAuth(unittest.TestCase):
 
     def test_credentials_fall_back_to_environment(self):
         def read_without_context():
-            with patch.object(config, "DS_USER", "env_user"), patch.object(
-                config, "DS_PASSWORD", "env_pass"
+            with (
+                patch.object(config, "DS_USER", "env_user"),
+                patch.object(config, "DS_PASSWORD", "env_pass"),
             ):
                 return auth.get_credentials()
 

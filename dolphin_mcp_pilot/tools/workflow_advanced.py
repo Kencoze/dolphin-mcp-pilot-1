@@ -18,7 +18,7 @@
 import json
 import time
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from ..client import ds_get, ds_post, ds_put
 from ..config import get_tenant_code
@@ -154,7 +154,7 @@ def _build_task_definition(task_code: int, task: dict) -> dict:
     return base
 
 
-def register_workflow_advanced_tools(mcp: FastMCP):
+def register_workflow_advanced_tools(mcp: MCPServer):
     """Register workflow advanced operation MCP tools."""
 
     @mcp.tool()
@@ -514,7 +514,7 @@ def register_workflow_advanced_tools(mcp: FastMCP):
         description: str = "",
         schedule: bool = False,
         schedule_cron: str = "0 0 6 * * ? *",
-        locations: list = None,
+        locations: list | None = None,
     ) -> dict:
         """Create a generic DAG workflow supporting any task type
         (SQL/SHELL/PYTHON/DEPENDENT/SUB_PROCESS/HTTP etc.).
@@ -1136,11 +1136,11 @@ def register_workflow_advanced_tools(mcp: FastMCP):
                     "local_params": ("local_params", "localParams"),
                 }
 
-                def _pick(canonical: str):
+                def _pick(canonical: str, alias_map: dict, update_dict: dict):
                     """Pick a canonical field value from updates; match any alias."""
-                    for alias in ALIAS[canonical]:
-                        if alias in updates:
-                            return True, updates[alias]
+                    for alias in alias_map[canonical]:
+                        if alias in update_dict:
+                            return True, update_dict[alias]
                     return False, None
 
                 # Track which updates keys were recognized; unrecognized = silently dropped
@@ -1151,7 +1151,7 @@ def register_workflow_advanced_tools(mcp: FastMCP):
                             recognized_keys.add(alias)
                 # "name" handled separately above
                 recognized_keys.add("name")
-                ignored_keys = [k for k in updates.keys() if k not in recognized_keys]
+                ignored_keys = [k for k in updates if k not in recognized_keys]
                 if ignored_keys:
                     ignored_fields.append(
                         {
@@ -1161,38 +1161,38 @@ def register_workflow_advanced_tools(mcp: FastMCP):
                     )
 
                 # ===== Top-level (taskDefinition) fields =====
-                hit, val = _pick("description")
+                hit, val = _pick("description", ALIAS, updates)
                 if hit:
                     target["description"] = val
-                hit, val = _pick("fail_retry_times")
+                hit, val = _pick("fail_retry_times", ALIAS, updates)
                 if hit:
                     target["failRetryTimes"] = val
-                hit, val = _pick("fail_retry_interval")
+                hit, val = _pick("fail_retry_interval", ALIAS, updates)
                 if hit:
                     target["failRetryInterval"] = val
-                hit, val = _pick("timeout")
+                hit, val = _pick("timeout", ALIAS, updates)
                 if hit:
                     target["timeout"] = val
-                hit, val = _pick("timeout_flag")
+                hit, val = _pick("timeout_flag", ALIAS, updates)
                 if hit:
                     # Compatible with bool/string: True/"OPEN" → OPEN, else → CLOSE
                     if isinstance(val, bool):
                         target["timeoutFlag"] = "OPEN" if val else "CLOSE"
                     else:
                         target["timeoutFlag"] = str(val).upper()
-                hit, val = _pick("timeout_notify_strategy")
+                hit, val = _pick("timeout_notify_strategy", ALIAS, updates)
                 if hit:
                     target["timeoutNotifyStrategy"] = val
-                hit, val = _pick("worker_group")
+                hit, val = _pick("worker_group", ALIAS, updates)
                 if hit:
                     target["workerGroup"] = val
-                hit, val = _pick("task_priority")
+                hit, val = _pick("task_priority", ALIAS, updates)
                 if hit:
                     target["taskPriority"] = val
-                hit, val = _pick("delay_time")
+                hit, val = _pick("delay_time", ALIAS, updates)
                 if hit:
                     target["delayTime"] = val
-                hit, val = _pick("flag")
+                hit, val = _pick("flag", ALIAS, updates)
                 if hit:
                     target["flag"] = val
 
@@ -1207,31 +1207,31 @@ def register_workflow_advanced_tools(mcp: FastMCP):
                 else:
                     params = params_raw
 
-                hit, val = _pick("sql")
+                hit, val = _pick("sql", ALIAS, updates)
                 if hit:
                     params["sql"] = val
-                hit, val = _pick("pre_statements")
+                hit, val = _pick("pre_statements", ALIAS, updates)
                 if hit:
                     params["preStatements"] = val
-                hit, val = _pick("post_statements")
+                hit, val = _pick("post_statements", ALIAS, updates)
                 if hit:
                     params["postStatements"] = val
-                hit, val = _pick("script")
+                hit, val = _pick("script", ALIAS, updates)
                 if hit:
                     params["rawScript"] = val
-                hit, val = _pick("datasource_id")
+                hit, val = _pick("datasource_id", ALIAS, updates)
                 if hit:
                     params["datasource"] = val
-                hit, val = _pick("sql_type")
+                hit, val = _pick("sql_type", ALIAS, updates)
                 if hit:
                     params["type"] = val
-                hit, val = _pick("sql_type_select")
+                hit, val = _pick("sql_type_select", ALIAS, updates)
                 if hit:
                     params["sqlType"] = str(val)
-                hit, val = _pick("resource_list")
+                hit, val = _pick("resource_list", ALIAS, updates)
                 if hit:
                     params["resourceList"] = normalize_resource_list(val)
-                hit, val = _pick("local_params")
+                hit, val = _pick("local_params", ALIAS, updates)
                 if hit:
                     params["localParams"] = val
                 target["taskParams"] = params

@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **MCP 2.0 upgrade** (issue #9): migrated to MCP Python SDK v2.0.0 with full support for the 2026-07-28 stateless protocol
+  - Updated dependency: `mcp>=1.0.0,<2.0.0` → `mcp>=2.0.0,<3.0.0`
+  - Renamed `FastMCP` → `MCPServer` across all modules (server/app.py and 11 tool files)
+  - Replaced `StreamableHTTPSessionManager` with stateless HTTP transport using `mcp.streamable_http_app(stateless_http=True)`
+  - HTTP mode now serves stateless requests conforming to the MCP 2026-07-28 specification
+  - Removed `Mcp-Session-Id` header dependency — any request can be routed to any server instance
+  - Per-request authentication (`X-DS-Token`, `X-DS-User/X-DS-Password`) continues to work unchanged
+  - stdio transport (`DS_MCP_TRANSPORT=stdio`) remains fully compatible
+  - All 58 tools verified working with the new MCPServer class
+
+### Fixed
+
+- **Code quality improvements**: resolved 36 lint issues for better maintainability
+  - Fixed implicit `Optional` type hints (`list = None` → `list | None = None`)
+  - Added timezone information to datetime constructions (DTZ007)
+  - Fixed import sorting across all modules (I001)
+  - Made Python files with shebang executable (EXE001)
+  - Fixed loop variable binding issues in workflow_advanced.py (B023)
+  - Sorted `__all__` exports alphabetically (RUF022)
+  - Replaced `ValueError` with `TypeError` for type validation (TRY004)
+  - Simplified dict key membership checks (SIM118)
+
 ---
 
 ## [0.3.0] - 2026-08-10

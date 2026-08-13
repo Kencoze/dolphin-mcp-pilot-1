@@ -102,10 +102,10 @@ def admin_credentials():
 
 @pytest.fixture(scope="session")
 def mcp_client(pilot_url, admin_credentials):
-    """An initialized MCPClient with admin credentials.
+    """An MCPClient with admin credentials.
 
-    The client is shared across the session; do not mutate its session_id
-    from individual tests (create a fresh MCPClient if you need isolation).
+    The client is shared across the session. In MCP 2.0 stateless mode,
+    there is no session state to mutate; each request carries its own credentials.
     """
     client = MCPClient(
         pilot_url,
@@ -113,6 +113,7 @@ def mcp_client(pilot_url, admin_credentials):
         password=admin_credentials["password"],
         token=admin_credentials["token"],
     )
+    # MCP 2.0: initialize() is a no-op for backward compatibility
     client.initialize()
     return client
 

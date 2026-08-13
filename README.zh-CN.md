@@ -87,4 +87,4 @@ docker compose --profile dev up -d dolphin-mcp-pilot-dev
 
 ## 🙏 致谢
 
-基于 [FastMCP](https://github.com/jlowin/fastmcp) 构建，灵感来自 Apache DolphinScheduler 社区。 (docs: slim README to OSS essentials; extract detailed content to docs/ (issue #13))
+基于 [MCP Python SDK 2.0](https://github.com/modelcontextprotocol/python-sdk) (MCPServer) 构建，灵感来自 Apache DolphinScheduler 社区。

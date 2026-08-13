@@ -41,10 +41,12 @@ ENV DS_MCP_TRANSPORT=http \
     MCP_PORT=8001 \
     PYTHONUNBUFFERED=1
 
-# Lightweight health check: verify the MCP port is accepting connections.
-# Uses only stdlib (no curl/wget install cost); exits 1 on connection refusal.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD ["python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1', 8001)); s.close()"]
+# Health check: verify the MCP HTTP endpoint is responding correctly.
+# Sends a JSON-RPC tools/list request to ensure the server is functional.
+# Uses only stdlib (no curl/wget install cost).
+# Must include Accept header for MCP 2.0 stateless protocol.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD ["python", "-c", "import urllib.request, json; req = urllib.request.Request('http://127.0.0.1:8001/mcp/', data=json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': 'tools/list', 'params': {}}).encode(), headers={'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream'}, method='POST'); resp = urllib.request.urlopen(req, timeout=5); exit(0 if resp.status == 200 else 1)"]
 
 USER 1001:1001
 

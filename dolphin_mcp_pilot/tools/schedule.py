@@ -18,9 +18,9 @@
 import json
 import time
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-from ..client import ds_get, ds_post, ds_put, ds_delete
+from ..client import ds_delete, ds_get, ds_post, ds_put
 from ..utils import require_ok, resolve_project_code
 
 
@@ -39,7 +39,7 @@ def ds_put_lite(pcode: int, schedule_id: int, schedule_json: str) -> dict:
     )
 
 
-def register_schedule_tools(mcp: FastMCP):
+def register_schedule_tools(mcp: MCPServer):
     """Register schedule management MCP tools."""
 
     @mcp.tool()
@@ -252,8 +252,7 @@ def register_schedule_tools(mcp: FastMCP):
 
         # 1. Read current config
         current = ds_get(
-            f"/projects/{pcode}/schedules?pageNo=1&pageSize=10"
-            f"&processDefinitionCode=0"
+            f"/projects/{pcode}/schedules?pageNo=1&pageSize=10&processDefinitionCode=0"
         )
         sched = None
         data = current.get("data", {})
@@ -326,7 +325,7 @@ def register_schedule_tools(mcp: FastMCP):
                         if attempt == 0:
                             time.sleep(1)
                 except Exception as e:
-                    online_detail = f"Online error (attempt {attempt + 1}): {str(e)}"
+                    online_detail = f"Online error (attempt {attempt + 1}): {e!s}"
                     if attempt == 0:
                         time.sleep(1)
             else:

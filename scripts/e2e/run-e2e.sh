@@ -84,10 +84,10 @@ ${COMPOSE} -f "${COMPOSE_FILE}" up -d dolphinscheduler 2>&1 | tee "${LOG_PREFIX}
 # --- Step 3: Wait for DolphinScheduler healthy -------------------------------
 log "[3/6] Waiting for DolphinScheduler to become healthy"
 DS_URL="http://localhost:${E2E_DS_PORT}/dolphinscheduler/ui/"
-deadline=$((SECONDS + 300))
+deadline=$((SECONDS + 600))  # 10 minutes for DS to start
 until curl -sf -o /dev/null "${DS_URL}"; do
   if [[ "${SECONDS}" -ge "${deadline}" ]]; then
-    echo "ERROR: DolphinScheduler did not become ready within 180s" >&2
+    echo "ERROR: DolphinScheduler did not become ready within 600s (10 minutes)" >&2
     ${COMPOSE} -f "${COMPOSE_FILE}" logs dolphinscheduler
     exit 1
   fi
@@ -117,10 +117,10 @@ ${COMPOSE} -f "${COMPOSE_FILE}" up -d dolphin-mcp-pilot 2>&1 | tee "${LOG_PREFIX
 
 # Wait for pilot healthy (any HTTP response means server is up)
 PILOT_URL="http://localhost:${E2E_PILOT_PORT}/mcp/"
-deadline=$((SECONDS + 60))
+deadline=$((SECONDS + 120))  # 2 minutes for pilot to start
 until curl -s -o /dev/null "${PILOT_URL}"; do
   if [[ "${SECONDS}" -ge "${deadline}" ]]; then
-    echo "ERROR: dolphin-mcp-pilot did not become ready within 60s" >&2
+    echo "ERROR: dolphin-mcp-pilot did not become ready within 120s (2 minutes)" >&2
     ${COMPOSE} -f "${COMPOSE_FILE}" logs dolphin-mcp-pilot
     exit 1
   fi

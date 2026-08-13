@@ -24,8 +24,8 @@ import urllib.parse
 import urllib.request
 import uuid
 
+from .auth import clear_cache, login
 from .config import get_ds_url
-from .auth import login
 
 
 def ds_api_request(
@@ -34,6 +34,7 @@ def ds_api_request(
     data: dict | None = None,
     json_body: dict | None = None,
     timeout: int | None = None,
+    _retry: bool = True,
 ) -> dict:
     """发送 HTTP 请求到 DolphinScheduler API
 
@@ -43,6 +44,7 @@ def ds_api_request(
         data: 表单数据（application/x-www-form-urlencoded）
         json_body: JSON 数据（application/json）
         timeout: 超时时间（秒），默认从环境变量 DS_API_TIMEOUT 读取，未设置则为 120
+        _retry: 内部参数，用于 401 重试控制
 
     Returns:
         API 响应的 JSON 数据
@@ -66,9 +68,18 @@ def ds_api_request(
 
     req = urllib.request.Request(full_url, data=body, headers=headers, method=method)
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-    with opener.open(req, timeout=timeout) as resp:
-        raw = resp.read().decode("utf-8")
-        return json.loads(raw) if raw else {}
+
+    try:
+        with opener.open(req, timeout=timeout) as resp:
+            raw = resp.read().decode("utf-8")
+            return json.loads(raw) if raw else {}
+    except urllib.error.HTTPError as e:
+        # Handle 401 Unauthorized - session may have expired
+        if e.code == 401 and _retry:
+            # Clear the session cache and retry with fresh login
+            clear_cache()
+            return ds_api_request(method, path, data, json_body, timeout, _retry=False)
+        raise
 
 
 def ds_get(path: str) -> dict:
@@ -115,8 +126,7 @@ def _encode_multipart(fields: dict, files: dict) -> tuple[bytes, str]:
         parts.append(f"--{boundary}".encode())
         parts.append(
             (
-                f'Content-Disposition: form-data; name="{name}"; '
-                f'filename="{filename}"'
+                f'Content-Disposition: form-data; name="{name}"; filename="{filename}"'
             ).encode()
         )
         parts.append(f"Content-Type: {ctype}".encode())

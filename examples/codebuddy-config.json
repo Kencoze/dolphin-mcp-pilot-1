@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "dolphinscheduler": {
-      "type": "sse",
+      "type": "streamable-http",
       "url": "http://localhost:8001/mcp/",
       "headers": {
         "X-DS-Token": "your_api_token_here"

@@ -18,14 +18,14 @@
 import json
 import time
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-from ..client import ds_get, ds_post, ds_delete
+from ..client import ds_delete, ds_get, ds_post
 from ..config import get_tenant_code
 from ..utils import require_ok, resolve_project_code
 
 
-def register_workflow_tools(mcp: FastMCP):
+def register_workflow_tools(mcp: MCPServer):
     """Register workflow basic operation MCP tools."""
 
     @mcp.tool()
@@ -512,7 +512,7 @@ def register_workflow_tools(mcp: FastMCP):
                         "Failed to query schedules; skipping auto-activation"
                     )
             except Exception as e:
-                ret["schedule_action"] = f"Schedule activation error: {str(e)}"
+                ret["schedule_action"] = f"Schedule activation error: {e!s}"
 
         return ret
 
@@ -520,7 +520,7 @@ def register_workflow_tools(mcp: FastMCP):
     def ds_run_workflow(
         project_name: str,
         workflow_code: int,
-        start_task_names: list = None,
+        start_task_names: list | None = None,
     ) -> dict:
         """Manually trigger a workflow run (brings it online first).
 
@@ -607,7 +607,7 @@ def register_workflow_tools(mcp: FastMCP):
 
         # Batch delete
         if not isinstance(workflow_code, list):
-            raise ValueError("workflow_code must be int or list")
+            raise TypeError("workflow_code must be int or list")
 
         results = []
         for code in workflow_code:

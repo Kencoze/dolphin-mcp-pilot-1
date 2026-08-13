@@ -12,14 +12,19 @@ deployment mode.
 
 ## Included configurations
 
+All HTTP configurations use **MCP 2.0 stateless protocol** (streamable-http transport).
+
 - [`codebuddy-config.json`](codebuddy-config.json) — CodeBuddy over HTTP with token authentication.
 - [`claude-desktop-config.json`](claude-desktop-config.json) — Claude Desktop over stdio with Docker.
-- [`http-auth-token.json`](http-auth-token.json) — HTTP transport with a DolphinScheduler API token.
-- [`http-auth-password.json`](http-auth-password.json) — HTTP transport with username/password authentication.
+- [`http-auth-token.json`](http-auth-token.json) — HTTP transport (MCP 2.0 stateless) with a DolphinScheduler API token.
+- [`http-auth-password.json`](http-auth-password.json) — HTTP transport (MCP 2.0 stateless) with username/password authentication.
 
 Replace every `your_*` or `YOUR_*` placeholder before using a configuration. For HTTP examples,
 also update the server URL and keep the trailing `/` in `/mcp/`. See the
 [deployment guide](../docs/DEPLOYMENT.md) for server setup and HTTPS guidance.
+
+**Note:** MCP 2.0 uses stateless protocol — no session management required. Each request carries
+its own authentication headers. See the [MCP 2.0 upgrade guide](../docs/MCP2_UPGRADE.md) for details.
 
 ## What a community example contains
 
@@ -100,7 +105,9 @@ An example is ready to merge when it:
 ## 中文
 
 这里是社区共建的 **dolphin-mcp-pilot 客户端配置示例库**。目录根部的 JSON 文件由项目维护；
-新的社区示例采用“一示例一目录”，以便同时保存配置、说明、测试版本和作者信息。
+新的社区示例采用”一示例一目录”，以便同时保存配置、说明、测试版本和作者信息。
+
+所有 HTTP 配置使用 **MCP 2.0 无状态协议**（streamable-http 传输）。
 
 ### 目录规范
 

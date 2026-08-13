@@ -1,8 +1,8 @@
 {
-  "description": "HTTP mode with API Token authentication (recommended)",
+  "description": "HTTP mode with API Token authentication (MCP 2.0 stateless, recommended)",
   "mcpServers": {
     "dolphinscheduler": {
-      "type": "sse",
+      "type": "streamable-http",
       "url": "http://your-server:8001/mcp/",
       "headers": {
         "X-DS-Token": "your_api_token_from_dolphinscheduler"

@@ -91,4 +91,4 @@ configuration.
 
 ## 🙏 Acknowledgments
 
-Built with [FastMCP](https://github.com/jlowin/fastmcp) and inspired by the Apache DolphinScheduler community.
+Built with [MCP Python SDK 2.0](https://github.com/modelcontextprotocol/python-sdk) (MCPServer) and inspired by the Apache DolphinScheduler community.

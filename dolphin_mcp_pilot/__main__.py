@@ -36,25 +36,39 @@ HTTP mode per-request auth headers:
 """
 
 import sys
+from contextlib import asynccontextmanager
 
 import anyio
 import uvicorn
-from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
-from .server import mcp
 from .config import DS_MCP_TRANSPORT, MCP_HOST, MCP_PORT
 from .middleware import AuthMiddleware
+from .server import mcp
+
+
+@asynccontextmanager
+async def lifespan(app: Starlette):
+    """Run the MCP session manager for the lifetime of the app."""
+    async with mcp.session_manager.run():
+        yield
 
 
 def main() -> None:
     if DS_MCP_TRANSPORT == "http":
-        session_manager = StreamableHTTPSessionManager(app=mcp._mcp_server)
+        # Use stateless HTTP transport (MCP 2.0)
+        # Create streamable HTTP app with explicit path configuration
+        mcp_app = mcp.streamable_http_app(
+            stateless_http=True,
+            streamable_http_path="/mcp/",
+        )
+
+        # Mount the MCP app at root, it will handle /mcp/ internally
         starlette_app = Starlette(
             debug=False,
-            routes=[Mount("/mcp", app=session_manager.handle_request)],
-            lifespan=lambda app: session_manager.run(),
+            routes=[Mount("/", app=mcp_app)],
+            lifespan=lifespan,
         )
         starlette_app.add_middleware(AuthMiddleware)
 

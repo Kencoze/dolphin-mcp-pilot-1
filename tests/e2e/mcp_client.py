@@ -2,6 +2,11 @@
 
 Uses only Python stdlib (urllib.request, json) so the e2e suite
 has no extra runtime dependencies beyond pytest.
+
+Supports MCP 2.0 (2026-07-28) stateless protocol:
+- No initialize/initialized handshake
+- No Mcp-Session-Id header
+- Per-request authentication via X-DS-Token or X-DS-User/X-DS-Password
 """
 
 import json
@@ -12,6 +17,7 @@ class MCPClient:
     """Minimal MCP client for tests.
 
     Supports user/password or token auth and handles both JSON and SSE responses.
+    Works with MCP 2.0 stateless protocol (no session management).
     """
 
     def __init__(self, base_url, user="", password="", token=""):
@@ -19,7 +25,6 @@ class MCPClient:
         self.user = user
         self.password = password
         self.token = token
-        self.session_id = None
         self._req_id = 0
 
     def _next_id(self):
@@ -31,13 +36,13 @@ class MCPClient:
             "Content-Type": "application/json",
             "Accept": "application/json, text/event-stream",
         }
+        # Per-request authentication (stateless protocol)
         if self.user and self.password:
             h["X-DS-User"] = self.user
             h["X-DS-Password"] = self.password
         if self.token:
             h["X-DS-Token"] = self.token
-        if self.session_id:
-            h["mcp-session-id"] = self.session_id
+        # Note: No Mcp-Session-Id header in MCP 2.0 stateless mode
         return h
 
     def _call(self, payload):
@@ -48,11 +53,7 @@ class MCPClient:
             method="POST",
         )
         with urllib.request.urlopen(req, timeout=30) as resp:
-            sid = resp.headers.get("mcp-session-id") or resp.headers.get(
-                "Mcp-Session-Id"
-            )
-            if sid:
-                self.session_id = sid
+            # MCP 2.0 stateless: no session ID in response
             body = resp.read().decode("utf-8")
             ct = resp.headers.get("Content-Type") or ""
             if "text/event-stream" in ct:
@@ -67,28 +68,10 @@ class MCPClient:
         raise ValueError(f"No SSE data found in: {body[:200]}")
 
     def initialize(self):
-        """Perform the MCP initialize handshake."""
-        result = self._call(
-            {
-                "jsonrpc": "2.0",
-                "id": self._next_id(),
-                "method": "initialize",
-                "params": {
-                    "protocolVersion": "2024-11-05",
-                    "capabilities": {},
-                    "clientInfo": {"name": "e2e-test", "version": "1.0"},
-                },
-            }
-        )
-        # Send the notifications/initialized follow-up (no id, no response expected).
-        self._call(
-            {
-                "jsonrpc": "2.0",
-                "method": "notifications/initialized",
-                "params": {},
-            }
-        )
-        return result
+        """MCP 2.0: No handshake required. This method is a no-op for compatibility."""
+        # In MCP 2.0 (2026-07-28), the initialize/initialized handshake is removed.
+        # The protocol is stateless, so we can call tools directly.
+        return {"protocolVersion": "2026-07-28", "capabilities": {}}
 
     def tools_list(self):
         """Return the list of registered tools."""

@@ -31,7 +31,7 @@ import time
 import urllib.parse
 import urllib.request
 
-from .config import get_ds_url, get_ds_credentials, get_ds_token_env
+from .config import get_ds_credentials, get_ds_token_env, get_ds_url
 
 # ---- per-request credentials ----
 _current_ds_user: contextvars.ContextVar[str] = contextvars.ContextVar(

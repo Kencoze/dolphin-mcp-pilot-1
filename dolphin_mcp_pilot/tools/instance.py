@@ -16,15 +16,15 @@
 """Instance management tools."""
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-from ..client import ds_get, ds_post, ds_delete
+from ..client import ds_delete, ds_get, ds_post
 from ..utils import require_ok, resolve_project_code
 
 
-def register_instance_tools(mcp: FastMCP):
+def register_instance_tools(mcp: MCPServer):
     """Register instance management MCP tools."""
 
     @mcp.tool()
@@ -197,7 +197,7 @@ def register_instance_tools(mcp: FastMCP):
         start_date: str = "",
         end_date: str = "",
         partition_date: str = "",
-        start_task_names: list = None,
+        start_task_names: list | None = None,
         task_depend_type: str = "TASK_POST",
         run_mode: str = "RUN_MODE_SERIAL",
     ) -> dict:
@@ -261,8 +261,8 @@ def register_instance_tools(mcp: FastMCP):
 
         pcode = resolve_project_code(project_name)
 
-        sd = datetime.strptime(start_date, "%Y-%m-%d")
-        ed = datetime.strptime(end_date, "%Y-%m-%d")
+        sd = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        ed = datetime.strptime(end_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         if ed < sd:
             raise ValueError("end_date must not be earlier than start_date")
         instance_count = (ed - sd).days + 1

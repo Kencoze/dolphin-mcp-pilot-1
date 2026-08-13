@@ -16,21 +16,41 @@ services:
     container_name: e2e-dolphinscheduler
     environment:
       TZ: Asia/Shanghai
-      # Override default 4GB heap with smaller size for testing
-      JAVA_OPTS: "-server -Xms512m -Xmx2g -Xmn512m -XX:+IgnoreUnrecognizedVMOptions -XX:+ExitOnOutOfMemoryError -DDOCKER=true"
+      # Optimized JVM settings for faster startup in resource-constrained environments
+      JAVA_OPTS: >-
+        -server
+        -Xms256m
+        -Xmx1536m
+        -Xmn128m
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=200
+        -XX:+IgnoreUnrecognizedVMOptions
+        -XX:+ExitOnOutOfMemoryError
+        -DDOCKER=true
+      # Disable overload protection to prevent startup failures in CI/local environments
+      # DS default thresholds (80% CPU/memory) are too aggressive for constrained environments
+      MASTER_SERVER_LOAD_PROTECTION_ENABLED: "false"
+      WORKER_SERVER_LOAD_PROTECTION_ENABLED: "false"
+      # Reduce thread pool sizes for faster startup
+      MASTER_EXEC_THREAD_NUM: "10"
+      MASTER_KILL_APPLICATION_WHEN_HANDLE_FAILOVER: "false"
+      WORKER_EXEC_THREADS: "10"
+      WORKER_FETCH_COMMAND_NUM: "1"
     ports:
       - "${E2E_DS_PORT:-12345}:12345"
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:12345/dolphinscheduler/ui/"]
+      # Check actual API endpoint, not just static UI files
+      # Increased start_period to allow for slower startup in constrained environments
+      test: ["CMD", "curl", "-sf", "-X", "POST", "http://localhost:12345/dolphinscheduler/login", "-d", "userName=admin&userPassword=dolphinscheduler123"]
       interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 120s
+      timeout: 10s
+      retries: 60
+      start_period: 300s
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: 6G
+          cpus: "4.0"
+          memory: 8G
 
   # Dolphin MCP Pilot
   dolphin-mcp-pilot:
@@ -49,14 +69,31 @@ services:
       dolphinscheduler:
         condition: service_healthy
     healthcheck:
-      # Use Python stdlib (no curl in slim image) to check port
-      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1', 8001)); s.close()"]
+      # Verify MCP HTTP endpoint is responding with a tools/list request
+      # Must include Accept header for MCP 2.0 stateless protocol
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import urllib.request, json
+          req = urllib.request.Request(
+            'http://127.0.0.1:8001/mcp/',
+            data=json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': 'tools/list', 'params': {}}).encode(),
+            headers={
+              'Content-Type': 'application/json',
+              'Accept': 'application/json, text/event-stream'
+            },
+            method='POST'
+          )
+          resp = urllib.request.urlopen(req, timeout=5)
+          exit(0 if resp.status == 200 else 1)
       interval: 5s
-      timeout: 3s
+      timeout: 10s
       retries: 20
-      start_period: 10s
+      start_period: 15s
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: 512M
+          cpus: "1.0"
+          memory: 1G

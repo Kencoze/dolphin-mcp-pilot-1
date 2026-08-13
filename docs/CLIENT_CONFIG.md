@@ -8,7 +8,7 @@ Add to your MCP client config:
 {
   "mcpServers": {
     "dolphinscheduler": {
-      "type": "sse",
+      "type": "streamable-http",
       "url": "http://localhost:8001/mcp/",
       "headers": {
         "X-DS-Token": "your_api_token"
@@ -19,6 +19,8 @@ Add to your MCP client config:
 ```
 
 > ⚠️ The URL **must end with `/`**. Without the trailing slash, Starlette returns a 307 redirect, which some MCP clients fail to follow.
+
+> **Note:** dolphin-mcp-pilot uses **MCP 2.0 stateless protocol**. No session management required — each request carries its own authentication headers. See the [MCP 2.0 upgrade guide](MCP2_UPGRADE.md) for details.
 
 ## Example Configurations
 
